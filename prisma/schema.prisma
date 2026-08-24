@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderType {
+  DELIVERY
+  SELF_PICKUP
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+model Charger {
+  id          String      @id @default(cuid())
+  name        String
+  description String
+  imageUrl    String?
+  price       Decimal     @db.Decimal(10, 2)
+  discount    Decimal     @default(0) @db.Decimal(5, 2)
+  stock       Int         @default(0)
+  isAvailable Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+  image       ChargerImage?
+}
+
+/**
+ * Uploaded product photos live in their own table so catalogue queries never
+ * drag image bytes into memory. Served through /api/charger-image/[id].
+ */
+model ChargerImage {
+  id        String   @id @default(cuid())
+  chargerId String   @unique
+  mimeType  String
+  data      Bytes
+  updatedAt DateTime @updatedAt
+  charger   Charger  @relation(fields: [chargerId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String   @unique
+  email        String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String?
+  customerName   String
+  customerEmail  String?
+  customerPhone  String
+  deliveryAddress String?
+  orderType      OrderType
+  deliveryFee    Decimal     @default(0) @db.Decimal(10, 2)
+  subtotal       Decimal     @db.Decimal(10, 2)
+  total          Decimal     @db.Decimal(10, 2)
+  status         OrderStatus @default(PENDING)
+  rejectionNote  String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  items          OrderItem[]
+  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([customerPhone])
+  @@index([customerEmail])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  chargerId String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  charger   Charger @relation(fields: [chargerId], references: [id])
+
+  @@index([orderId])
+  @@index([chargerId])
+}
+
+model StoreSetting {
+  id           String   @id @default(cuid())
+  deliveryFee  Decimal  @default(0) @db.Decimal(10, 2)
+  updatedAt    DateTime @updatedAt
+}

@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/*
+ * Light, high-contrast commerce palette with an electric-blue brand accent.
+ * Declared in `@theme` so every colour is a real Tailwind utility
+ * (`bg-surface`, `text-brand`, `border-line`, ...) instead of a loose hex.
+ */
+@theme {
+	/* Surfaces */
+	--color-canvas: #f5f7fb;
+	--color-surface: #ffffff;
+	--color-raised: #fbfcfe;
+
+	/* Text */
+	--color-ink: #0f172a;
+	--color-muted: #64748b;
+	--color-subtle: #94a3b8;
+
+	/* Lines */
+	--color-line: #e5e9f0;
+	--color-line-strong: #cbd5e1;
+
+	/* Brand */
+	--color-brand: #2563eb;
+	--color-brand-dark: #1d4ed8;
+	--color-brand-soft: #eff6ff;
+	--color-brand-ring: #bfdbfe;
+
+	/* Status */
+	--color-success: #059669;
+	--color-success-soft: #ecfdf5;
+	--color-warn: #d97706;
+	--color-warn-soft: #fffbeb;
+	--color-danger: #dc2626;
+	--color-danger-soft: #fef2f2;
+
+	/* Admin chrome */
+	--color-night: #0f172a;
+	--color-night-soft: #1e293b;
+	--color-night-line: #334155;
+
+	--font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+		"Segoe UI", Roboto, sans-serif;
+
+	--radius-card: 1rem;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--color-canvas);
+	color: var(--color-ink);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+/* Consistent focus ring on every interactive element. */
+:where(a, button, input, select, textarea):focus-visible {
+	outline: 2px solid var(--color-brand);
+	outline-offset: 2px;
+}
+
+/* Hide number-input spinners on quantity fields. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+/* Clamp long product copy to a predictable card height. */
+.line-clamp-3 {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
