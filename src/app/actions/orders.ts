@@ -152,6 +152,7 @@ export async function placeOrder(
 
     revalidatePath("/chargers");
     revalidatePath("/admin");
+    revalidatePath("/admin/orders");
     revalidatePath("/orders");
 
     return { ok: true, orderId: order.id };

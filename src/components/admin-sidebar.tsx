@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  CheckCheck,
   ExternalLink,
+  LayoutDashboard,
   LogOut,
   Package,
   Settings,
@@ -13,7 +15,9 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/admin/actions";
 
 const LINKS = [
-  { href: "/admin", label: "Orders", icon: ShoppingBag },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/completed", label: "Completed", icon: CheckCheck },
   { href: "/admin/chargers", label: "Inventory", icon: Package },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

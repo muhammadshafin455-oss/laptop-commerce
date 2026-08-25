@@ -2,42 +2,11 @@ import { AlertTriangle, Boxes, Eye, PackagePlus } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
 import { ChargerCreateForm, ChargerEditor } from "@/components/charger-manager";
 import { Tabs } from "@/components/tabs";
-import { Card, LOW_STOCK_THRESHOLD } from "@/components/ui";
+import { Card, LOW_STOCK_THRESHOLD, StatCard } from "@/components/ui";
 import { guardAdmin } from "@/lib/auth";
 import { getAllChargers } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
-
-function Stat({
-  label,
-  value,
-  icon: Icon,
-  tone = "brand",
-}: {
-  label: string;
-  value: string;
-  icon: typeof Boxes;
-  tone?: "brand" | "warn" | "danger";
-}) {
-  const tones = {
-    brand: "bg-brand-soft text-brand",
-    warn: "bg-warn-soft text-warn",
-    danger: "bg-danger-soft text-danger",
-  };
-  return (
-    <Card className="flex items-center gap-4 p-5">
-      <span
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}
-      >
-        <Icon className="h-5 w-5" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-sm text-muted">{label}</p>
-        <p className="mt-0.5 text-2xl font-bold tracking-[-0.02em]">{value}</p>
-      </div>
-    </Card>
-  );
-}
 
 export default async function AdminChargersPage() {
   await guardAdmin();
@@ -56,15 +25,15 @@ export default async function AdminChargersPage() {
       description="Everything in the catalogue, and how many pieces are left of each."
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Pieces in stock" value={String(totalPieces)} icon={Boxes} />
-        <Stat label="Listed on storefront" value={String(listed)} icon={Eye} />
-        <Stat
+        <StatCard label="Pieces in stock" value={String(totalPieces)} icon={Boxes} />
+        <StatCard label="Listed on storefront" value={String(listed)} icon={Eye} />
+        <StatCard
           label="Running low"
           value={String(lowStock)}
           icon={AlertTriangle}
           tone="warn"
         />
-        <Stat
+        <StatCard
           label="Out of stock"
           value={String(outOfStock)}
           icon={AlertTriangle}

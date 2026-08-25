@@ -35,6 +35,8 @@ function number(formData: FormData, key: string): number | null {
 
 function revalidateAdmin() {
   revalidatePath("/admin");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/completed");
   revalidatePath("/admin/chargers");
   revalidatePath("/admin/settings");
   revalidatePath("/chargers");

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
-import { STATUS_LABELS } from "@/lib/order-flow";
+import { LOW_STOCK_THRESHOLD, STATUS_LABELS } from "@/lib/order-flow";
 import type { OrderStatus } from "@/lib/types";
 
 /* -------------------------------------------------------------------------- */
@@ -168,7 +168,7 @@ export function Notice({
 /* Badges                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export { STATUS_LABELS };
+export { STATUS_LABELS, LOW_STOCK_THRESHOLD };
 
 const STATUS_STYLES: Record<OrderStatus, string> = {
   PENDING: "border-warn/30 bg-warn-soft text-warn",
@@ -190,9 +190,6 @@ export function StatusBadge({ status }: { status: OrderStatus }) {
     </span>
   );
 }
-
-/** Threshold below which stock is called out as running low. */
-export const LOW_STOCK_THRESHOLD = 10;
 
 export function StockBadge({
   stock,
@@ -233,5 +230,68 @@ export function StockBadge({
       />
       {low ? `Only ${stock} left` : `${stock} in stock`}
     </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Admin stats                                                                */
+/* -------------------------------------------------------------------------- */
+
+type StatTone = "brand" | "warn" | "success" | "danger" | "neutral";
+
+const STAT_TONES: Record<StatTone, string> = {
+  brand: "bg-brand-soft text-brand",
+  warn: "bg-warn-soft text-warn",
+  success: "bg-success-soft text-success",
+  danger: "bg-danger-soft text-danger",
+  neutral: "bg-canvas text-muted",
+};
+
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  tone = "brand",
+  href,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  tone?: StatTone;
+  /** Makes the whole tile a link through to the matching list. */
+  href?: string;
+}) {
+  const body = (
+    <>
+      <span
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${STAT_TONES[tone]}`}
+      >
+        <Icon className="h-5 w-5" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm text-muted">{label}</span>
+        <span className="mt-0.5 block text-2xl font-bold tracking-[-0.02em]">
+          {value}
+        </span>
+        {hint ? <span className="mt-0.5 block text-xs text-subtle">{hint}</span> : null}
+      </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] transition-colors hover:border-brand"
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <Card className="flex items-center gap-4 p-5">{body}</Card>
   );
 }

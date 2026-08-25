@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { applyDiscount, round2, toNumber } from "@/lib/money";
 import { normalizePhone } from "@/lib/user-auth";
+import { LOW_STOCK_THRESHOLD, ORDER_STATUSES } from "@/lib/order-flow";
 import type {
   ChargerView,
   FulfillmentType,
@@ -155,12 +156,78 @@ export function mapOrder(row: OrderRow): OrderView {
   };
 }
 
-export async function getOrders(): Promise<OrderView[]> {
+export async function getOrders(
+  statuses?: OrderStatus[],
+): Promise<OrderView[]> {
   const rows = await prisma.order.findMany({
+    where: statuses ? { status: { in: statuses } } : undefined,
     include: orderInclude,
     orderBy: { createdAt: "desc" },
   });
   return rows.map(mapOrder);
+}
+
+/**
+ * Counts and revenue per status, aggregated in the database. The dashboard used
+ * to load every order with its line items just to count them; this is one cheap
+ * round trip instead.
+ */
+export async function getOrderStats(): Promise<{
+  counts: Record<OrderStatus, number>;
+  revenueByStatus: Record<OrderStatus, number>;
+  total: number;
+}> {
+  const groups = await prisma.order.groupBy({
+    by: ["status"],
+    _count: { _all: true },
+    _sum: { total: true },
+  });
+
+  const counts = {} as Record<OrderStatus, number>;
+  const revenueByStatus = {} as Record<OrderStatus, number>;
+  for (const status of ORDER_STATUSES) {
+    counts[status] = 0;
+    revenueByStatus[status] = 0;
+  }
+
+  let total = 0;
+  for (const group of groups) {
+    const status = group.status as OrderStatus;
+    counts[status] = group._count._all;
+    revenueByStatus[status] = toNumber(group._sum.total);
+    total += group._count._all;
+  }
+
+  return { counts, revenueByStatus, total };
+}
+
+/** How many orders each phone number has placed, for the repeat-customer badge. */
+export async function getOrderCountsByPhone(): Promise<Map<string, number>> {
+  const groups = await prisma.order.groupBy({
+    by: ["customerPhone"],
+    _count: { _all: true },
+  });
+  return new Map(groups.map((g) => [g.customerPhone, g._count._all]));
+}
+
+/** Catalogue totals without pulling every product row into memory. */
+export async function getInventoryStats(): Promise<{
+  listed: number;
+  totalPieces: number;
+  lowStock: { id: string; name: string; stock: number }[];
+}> {
+  const [listed, pieces, lowStock] = await Promise.all([
+    prisma.charger.count({ where: { isAvailable: true } }),
+    prisma.charger.aggregate({ _sum: { stock: true } }),
+    prisma.charger.findMany({
+      where: { stock: { lte: LOW_STOCK_THRESHOLD } },
+      select: { id: true, name: true, stock: true },
+      orderBy: { stock: "asc" },
+      take: 5,
+    }),
+  ]);
+
+  return { listed, totalPieces: pieces._sum.stock ?? 0, lowStock };
 }
 
 export async function getOrderById(id: string): Promise<OrderView | null> {

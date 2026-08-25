@@ -18,7 +18,7 @@ export const TRANSITION_LABELS: Record<OrderStatus, string> = {
   PREPARING: "Start packing",
   READY: "Ready for pickup",
   OUT_FOR_DELIVERY: "Out for delivery",
-  COMPLETED: "Completed — customer has the order",
+  COMPLETED: "Mark completed",
   REJECTED: "Reject order",
   CANCELLED: "Cancel order",
 };
@@ -106,3 +106,18 @@ export function stageHint(status: OrderStatus, orderType: FulfillmentType): stri
       return "This order was cancelled. Stock has been returned to the catalogue.";
   }
 }
+
+/** Every status, in pipeline order. */
+export const ORDER_STATUSES: OrderStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "PREPARING",
+  "READY",
+  "OUT_FOR_DELIVERY",
+  "COMPLETED",
+  "REJECTED",
+  "CANCELLED",
+];
+
+/** Stock at or below this is called out as running low. */
+export const LOW_STOCK_THRESHOLD = 10;
