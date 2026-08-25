@@ -32,28 +32,28 @@ export function ChargerCard({ charger }: { charger: ChargerView }) {
       <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-line">
         <Artwork charger={charger} />
         {charger.discount > 0 ? (
-          <span className="absolute left-3 top-3 rounded-full bg-danger px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+          <span className="absolute left-2 top-2 rounded-full bg-danger px-2 py-0.5 text-[11px] font-bold text-white shadow-sm sm:left-3 sm:top-3 sm:px-2.5 sm:py-1 sm:text-xs">
             {charger.discount}% off
           </span>
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="text-base font-semibold leading-snug tracking-[-0.01em]">
+      <div className="flex flex-1 flex-col p-3 sm:p-5">
+        <h3 className="text-sm font-semibold leading-snug tracking-[-0.01em] sm:text-base">
           {charger.name}
         </h3>
 
-        <p className="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-muted">
+        <p className="mt-1.5 line-clamp-3 flex-1 text-xs leading-5 text-muted sm:mt-2 sm:text-sm sm:leading-6">
           {charger.description}
         </p>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-3 flex flex-col items-start gap-2 sm:mt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-[-0.02em]">
+            <span className="text-lg font-bold tracking-[-0.02em] sm:text-2xl">
               {formatMoney(charger.finalPrice)}
             </span>
             {charger.discount > 0 ? (
-              <span className="text-sm text-subtle line-through">
+              <span className="text-xs text-subtle line-through sm:text-sm">
                 {formatMoney(charger.price)}
               </span>
             ) : null}
@@ -61,7 +61,7 @@ export function ChargerCard({ charger }: { charger: ChargerView }) {
           <StockBadge stock={charger.stock} />
         </div>
 
-        <div className="mt-4">
+        <div className="mt-3 sm:mt-4">
           <AddToCart charger={charger} />
         </div>
       </div>

@@ -59,7 +59,7 @@ function ChargerFields({
         </Field>
       </div>
 
-      <Field label="Price (USD)" error={errors?.price}>
+      <Field label="Price (PKR)" error={errors?.price}>
         <input
           name="price"
           type="number"

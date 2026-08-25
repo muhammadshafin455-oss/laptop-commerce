@@ -73,7 +73,7 @@ async function main() {
   } else {
     await prisma.storeSetting.create({ data: { deliveryFee: "7.50" } });
   }
-  console.log("Store settings ready (delivery fee $7.50)");
+  console.log("Store settings ready (delivery fee Rs 7.50)");
 
   if (!withDemoProducts) {
     console.log(

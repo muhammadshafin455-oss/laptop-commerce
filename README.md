@@ -128,6 +128,14 @@ The header badge counts **distinct products**, not units: raising the quantity
 of something already in the cart does not move it. `useCart` exposes both —
 `lineCount` for the badge and `itemCount` for totals.
 
+### Currency
+
+Amounts are formatted as PKR (`Rs`) by `formatMoney` in `src/lib/money.ts`.
+`Intl` gives PKR zero decimal places by default, which would round a Rs 7.50
+delivery fee to Rs 8 and stop line items adding up to the order total — so two
+decimals are forced, matching the `Decimal(10, 2)` columns the values are stored
+in. To change currency, that formatter is the only place to edit.
+
 ### Phone numbers
 
 Phone numbers are the customer login identifier, so they are stored reduced to
@@ -180,6 +188,7 @@ transition leads back out of a finished order, restocking only ever runs once.
 - `npm audit` reports a high-severity advisory in `deepmerge-ts`, reached through
   the Prisma **CLI** (`@prisma/config`). It is a build-time dependency, not
   runtime, and the only offered fix downgrades Prisma to v6.
-- `pg` warns that `sslmode=require` is currently treated as `verify-full` and
-  that this will change in `pg` v9. Use `sslmode=verify-full` in `DATABASE_URL`
-  to pin today's behaviour.
+- `DATABASE_URL` should use `sslmode=verify-full`. `pg` currently treats
+  `require` as `verify-full` but warns on every connection that this will change
+  in `pg` v9, where `require` becomes the weaker libpq semantics. Naming
+  `verify-full` pins today's behaviour and silences the warning.

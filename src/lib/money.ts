@@ -24,9 +24,17 @@ export function applyDiscount(price: number, discountPercent: number): number {
   return round2(price * (1 - safeDiscount / 100));
 }
 
-const formatter = new Intl.NumberFormat("en-US", {
+/**
+ * `Intl` formats PKR with zero decimal places by default, which would round a
+ * Rs 7.50 delivery fee to Rs 8 and stop line items adding up to the total.
+ * Prices are stored as Decimal(10,2), so two decimals are forced to keep what
+ * is shown identical to what is charged.
+ */
+const formatter = new Intl.NumberFormat("en-PK", {
   style: "currency",
-  currency: "USD",
+  currency: "PKR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
 
 export function formatMoney(value: number): string {

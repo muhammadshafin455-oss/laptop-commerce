@@ -106,6 +106,10 @@ export function SectionHeading({
 export const inputClass =
   "mt-1.5 w-full rounded-lg border border-line-strong bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-subtle focus:border-brand focus:ring-4 focus:ring-brand-ring/40";
 
+/** Compact variant, for inline controls like the catalogue search. */
+export const inputSmClass =
+  "w-full rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-sm text-ink outline-none transition-colors placeholder:text-subtle focus:border-brand focus:ring-4 focus:ring-brand-ring/40";
+
 export const inputErrorClass =
   "mt-1.5 w-full rounded-lg border border-danger bg-danger-soft px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-subtle focus:ring-4 focus:ring-danger/20";
 

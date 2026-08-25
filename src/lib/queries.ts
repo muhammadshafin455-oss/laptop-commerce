@@ -53,14 +53,35 @@ export function mapCharger(row: ChargerRow): ChargerView {
   };
 }
 
-/** Storefront catalogue: only chargers the shop is actively selling. */
-export async function getStorefrontChargers(): Promise<ChargerView[]> {
+/**
+ * Storefront catalogue: only chargers the shop is actively selling, optionally
+ * narrowed by a shopper's search. Name and description are both matched, so
+ * "65W", "usb-c" and "thinkpad" all find something.
+ */
+export async function getStorefrontChargers(
+  query?: string,
+): Promise<ChargerView[]> {
+  const trimmed = query?.trim();
+
+  const where: Prisma.ChargerWhereInput = { isAvailable: true };
+  if (trimmed) {
+    where.OR = [
+      { name: { contains: trimmed, mode: "insensitive" } },
+      { description: { contains: trimmed, mode: "insensitive" } },
+    ];
+  }
+
   const rows = await prisma.charger.findMany({
-    where: { isAvailable: true },
+    where,
     orderBy: { createdAt: "desc" },
     select: chargerSelect,
   });
   return rows.map(mapCharger);
+}
+
+/** Total listed chargers, so a filtered view can say what it filtered from. */
+export async function countStorefrontChargers(): Promise<number> {
+  return prisma.charger.count({ where: { isAvailable: true } });
 }
 
 /** Admin catalogue: everything, including hidden and out-of-stock chargers. */

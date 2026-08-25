@@ -1,6 +1,8 @@
 /** Product photos are uploaded from the admin's machine, not linked by URL. */
 
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+// Vercel caps a serverless request body at 4.5MB, so anything larger would be
+// rejected by the platform before the action ever runs. Kept under that.
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024; // 4MB
 
 export const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",

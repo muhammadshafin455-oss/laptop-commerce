@@ -20,7 +20,7 @@ export function DeliveryFeeForm({ deliveryFee }: { deliveryFee: number }) {
   return (
     <form action={formAction}>
       <Field
-        label="Delivery fee (USD)"
+        label="Delivery fee (PKR)"
         hint="Charged on delivery orders only. Set to 0 for free delivery."
         error={state?.fieldErrors?.deliveryFee}
       >
