@@ -25,15 +25,22 @@ import {
 } from "@/components/ui";
 import { useCart } from "@/lib/cart-store";
 import { formatMoney, round2 } from "@/lib/money";
-import type { ChargerView, FulfillmentType, SessionUserView } from "@/lib/types";
+import { PickupLocation } from "@/components/pickup-details";
+import type {
+  ChargerView,
+  FulfillmentType,
+  PickupDetails,
+  SessionUserView,
+} from "@/lib/types";
 
 type Props = {
   catalogue: ChargerView[];
   deliveryFee: number;
+  pickup: PickupDetails;
   user: SessionUserView | null;
 };
 
-export function CartView({ catalogue, deliveryFee, user }: Props) {
+export function CartView({ catalogue, deliveryFee, pickup, user }: Props) {
   const { items, hydrated, setQuantity, removeItem, clear } = useCart();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -348,10 +355,7 @@ export function CartView({ catalogue, deliveryFee, user }: Props) {
               />
             </Field>
           ) : (
-            <p className="rounded-lg border border-line bg-canvas p-3.5 text-sm leading-6 text-muted">
-              Collect in store once the shop marks your order ready. We will
-              contact you on the number above.
-            </p>
+            <PickupLocation pickup={pickup} />
           )}
         </div>
 

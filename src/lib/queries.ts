@@ -5,6 +5,7 @@ import { normalizePhone } from "@/lib/user-auth";
 import { LOW_STOCK_THRESHOLD, ORDER_STATUSES } from "@/lib/order-flow";
 import type {
   ChargerView,
+  PickupDetails,
   FulfillmentType,
   OrderStatus,
   OrderView,
@@ -115,6 +116,18 @@ export async function getStoreSetting() {
 export async function getDeliveryFee(): Promise<number> {
   const setting = await getStoreSetting();
   return toNumber(setting.deliveryFee);
+}
+
+/** The shop's collection details, for customers choosing self pickup. */
+export async function getPickupDetails(): Promise<PickupDetails> {
+  const setting = await getStoreSetting();
+  return {
+    shopName: setting.shopName,
+    shopAddress: setting.shopAddress,
+    shopPhone: setting.shopPhone,
+    pickupHours: setting.pickupHours,
+    hasAddress: !!setting.shopAddress?.trim(),
+  };
 }
 
 const orderInclude = {
@@ -263,6 +276,17 @@ export async function findOrders(query: string): Promise<OrderView[]> {
 
   const rows = await prisma.order.findMany({
     where: { OR: clauses },
+    include: orderInclude,
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map(mapOrder);
+}
+
+/** Orders looked up by ID, for the ones remembered on this device. */
+export async function getOrdersByIds(ids: string[]): Promise<OrderView[]> {
+  if (ids.length === 0) return [];
+  const rows = await prisma.order.findMany({
+    where: { id: { in: ids } },
     include: orderInclude,
     orderBy: { createdAt: "desc" },
   });

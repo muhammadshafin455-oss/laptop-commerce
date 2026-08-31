@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth";
 import { readImageUpload, type ImageUpload } from "@/lib/images";
 import { round2 } from "@/lib/money";
+import { notifyCustomerOfStatus } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { getStoreSetting } from "@/lib/queries";
 import {
@@ -290,8 +291,18 @@ export async function updateOrderStatus(
     });
   });
 
+  // Tell the customer, for the stages that actually affect them.
+  await notifyCustomerOfStatus({
+    id: order.id,
+    status,
+    userId: order.userId,
+    customerPhone: order.customerPhone,
+    rejectionNote: willRestock ? note || null : null,
+  });
+
   revalidateAdmin();
   revalidatePath(`/orders/${id}`);
+  revalidatePath("/orders");
   return { ok: true, message: "Order updated." };
 }
 
@@ -299,27 +310,42 @@ export async function updateOrderStatus(
 /* Settings                                                                   */
 /* -------------------------------------------------------------------------- */
 
-export async function updateDeliveryFee(
+export async function updateStoreSettings(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
   await requireAdmin();
 
   const fee = number(formData, "deliveryFee");
+  const shopAddress = text(formData, "shopAddress");
+
+  const fieldErrors: Record<string, string> = {};
   if (fee === null || fee < 0) {
-    return {
-      ok: false,
-      message: "Enter a delivery fee of 0 or more.",
-      fieldErrors: { deliveryFee: "Must be 0 or more." },
-    };
+    fieldErrors.deliveryFee = "Must be 0 or more.";
+  }
+  // Customers choosing self pickup have nowhere to go without this.
+  if (shopAddress && shopAddress.length < 8) {
+    fieldErrors.shopAddress = "Give the full address customers should come to.";
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { ok: false, message: "Please correct the highlighted fields.", fieldErrors };
   }
 
   const setting = await getStoreSetting();
   await prisma.storeSetting.update({
     where: { id: setting.id },
-    data: { deliveryFee: round2(fee) },
+    data: {
+      deliveryFee: round2(fee!),
+      shopName: text(formData, "shopName") || null,
+      shopAddress: shopAddress || null,
+      shopPhone: text(formData, "shopPhone") || null,
+      pickupHours: text(formData, "pickupHours") || null,
+    },
   });
 
   revalidateAdmin();
-  return { ok: true, message: "Delivery fee updated." };
+  revalidatePath("/cart");
+  revalidatePath("/orders", "layout");
+  return { ok: true, message: "Saved." };
 }

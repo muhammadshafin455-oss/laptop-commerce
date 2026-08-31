@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { applyDiscount, round2, toNumber } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { getDeliveryFee } from "@/lib/queries";
+import { notifyAdminOfNewOrder } from "@/lib/notifications";
+import { rememberOrder } from "@/lib/recent-orders";
 import { getCurrentUser, isValidPhone, normalizePhone } from "@/lib/user-auth";
 import type { FulfillmentType } from "@/lib/types";
 
@@ -148,6 +150,18 @@ export async function placeOrder(
           },
         },
       });
+    });
+
+    // Remember it on this device so a guest still finds it under My orders.
+    await rememberOrder(order.id);
+
+    // Put it in front of the shop straight away.
+    await notifyAdminOfNewOrder({
+      id: order.id,
+      customerName: order.customerName,
+      total,
+      orderType: input.orderType,
+      itemCount: lines.reduce((sum, line) => sum + line.quantity, 0),
     });
 
     revalidatePath("/chargers");

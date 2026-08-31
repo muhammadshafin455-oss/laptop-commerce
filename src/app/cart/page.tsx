@@ -1,16 +1,21 @@
 import { CartView } from "@/components/cart-view";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { getDeliveryFee, getStorefrontChargers } from "@/lib/queries";
+import {
+  getDeliveryFee,
+  getPickupDetails,
+  getStorefrontChargers,
+} from "@/lib/queries";
 import { getCurrentUser } from "@/lib/user-auth";
 
 // Live prices, stock and the delivery fee all come from the database.
 export const dynamic = "force-dynamic";
 
 export default async function CartPage() {
-  const [chargers, deliveryFee, user] = await Promise.all([
+  const [chargers, deliveryFee, pickup, user] = await Promise.all([
     getStorefrontChargers(),
     getDeliveryFee(),
+    getPickupDetails(),
     getCurrentUser(),
   ]);
 
@@ -22,7 +27,12 @@ export default async function CartPage() {
         <h1 className="text-3xl font-bold tracking-[-0.025em] sm:text-4xl">
           Your cart
         </h1>
-        <CartView catalogue={chargers} deliveryFee={deliveryFee} user={user} />
+        <CartView
+          catalogue={chargers}
+          deliveryFee={deliveryFee}
+          pickup={pickup}
+          user={user}
+        />
       </main>
 
       <SiteFooter />

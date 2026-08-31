@@ -71,6 +71,16 @@ export type OrderView = {
   items: OrderItemView[];
 };
 
+/** Where customers collect self-pickup orders. */
+export type PickupDetails = {
+  shopName: string | null;
+  shopAddress: string | null;
+  shopPhone: string | null;
+  pickupHours: string | null;
+  /** False when the shop has not filled any of this in yet. */
+  hasAddress: boolean;
+};
+
 export type SessionUserView = {
   id: string;
   name: string;

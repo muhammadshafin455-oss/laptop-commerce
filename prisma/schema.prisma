@@ -97,8 +97,52 @@ model OrderItem {
   @@index([chargerId])
 }
 
+enum NotificationAudience {
+  ADMIN
+  CUSTOMER
+}
+
+enum NotificationKind {
+  ORDER_PLACED
+  ORDER_CONFIRMED
+  ORDER_PACKING
+  ORDER_READY
+  ORDER_OUT_FOR_DELIVERY
+  ORDER_COMPLETED
+  ORDER_REJECTED
+  ORDER_CANCELLED
+}
+
+/**
+ * An in-app message for the shop or a customer. Customer rows carry both the
+ * account id (when there is one) and the order's phone number, so a guest can
+ * still be matched to their notifications.
+ */
+model Notification {
+  id        String               @id @default(cuid())
+  audience  NotificationAudience
+  kind      NotificationKind
+  title     String
+  body      String
+  orderId   String?
+  userId    String?
+  phone     String?
+  readAt    DateTime?
+  createdAt DateTime             @default(now())
+
+  @@index([audience, readAt])
+  @@index([userId])
+  @@index([phone])
+  @@index([orderId])
+}
+
 model StoreSetting {
-  id           String   @id @default(cuid())
-  deliveryFee  Decimal  @default(0) @db.Decimal(10, 2)
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  deliveryFee Decimal  @default(0) @db.Decimal(10, 2)
+  // Shown to customers who choose self pickup, so they know where to collect.
+  shopName    String?
+  shopAddress String?
+  shopPhone   String?
+  pickupHours String?
+  updatedAt   DateTime @updatedAt
 }

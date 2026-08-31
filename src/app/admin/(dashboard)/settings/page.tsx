@@ -1,31 +1,31 @@
-import { Truck } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
-import { DeliveryFeeForm } from "@/components/settings-form";
+import { StoreSettingsForm } from "@/components/settings-form";
 import { Card } from "@/components/ui";
 import { guardAdmin } from "@/lib/auth";
-import { getDeliveryFee } from "@/lib/queries";
+import { getDeliveryFee, getPickupDetails } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   await guardAdmin();
-  const deliveryFee = await getDeliveryFee();
+  const [deliveryFee, pickup] = await Promise.all([
+    getDeliveryFee(),
+    getPickupDetails(),
+  ]);
 
   return (
     <AdminShell title="Settings" description="Store-wide options.">
-      <Card className="max-w-md p-6">
-        <div className="mb-5 flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand">
-            <Truck className="h-[18px] w-[18px]" />
-          </span>
-          <div>
-            <h2 className="font-bold tracking-[-0.01em]">Delivery</h2>
-            <p className="text-sm text-muted">
-              Applied at checkout when a customer picks delivery.
-            </p>
-          </div>
-        </div>
-        <DeliveryFeeForm deliveryFee={deliveryFee} />
+      {!pickup.hasAddress ? (
+        <p className="mb-6 flex items-start gap-2.5 rounded-lg border border-warn/30 bg-warn-soft px-4 py-3 text-sm text-warn">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          No pickup address is set. Customers choosing self pickup are not being
+          told where to collect their order.
+        </p>
+      ) : null}
+
+      <Card className="max-w-2xl p-6">
+        <StoreSettingsForm deliveryFee={deliveryFee} pickup={pickup} />
       </Card>
     </AdminShell>
   );

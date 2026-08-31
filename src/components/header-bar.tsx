@@ -14,7 +14,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/app/actions/auth";
+import { NotificationBell } from "@/components/notification-bell";
 import { buttonClass } from "@/components/ui";
+import type { NotificationView } from "@/lib/notifications";
 import { useCart } from "@/lib/cart-store";
 import type { SessionUserView } from "@/lib/types";
 
@@ -127,7 +129,15 @@ function AccountMenu({ user }: { user: SessionUserView }) {
   );
 }
 
-export function HeaderBar({ user }: { user: SessionUserView | null }) {
+export function HeaderBar({
+  user,
+  notifications,
+  markNotificationsRead,
+}: {
+  user: SessionUserView | null;
+  notifications: { items: NotificationView[]; unread: number };
+  markNotificationsRead: () => Promise<void>;
+}) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -158,6 +168,16 @@ export function HeaderBar({ user }: { user: SessionUserView | null }) {
         </nav>
 
         <div className="flex items-center gap-1">
+          {/* Only shown once there is something to show, so a first-time
+              visitor is not given an empty bell. */}
+          {notifications.items.length > 0 ? (
+            <NotificationBell
+              items={notifications.items}
+              unread={notifications.unread}
+              markRead={markNotificationsRead}
+            />
+          ) : null}
+
           <CartButton />
 
           {user ? (

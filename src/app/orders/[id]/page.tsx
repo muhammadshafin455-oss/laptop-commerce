@@ -14,7 +14,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ButtonLink, Card, STATUS_LABELS, StatusBadge } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
-import { getOrderById } from "@/lib/queries";
+import { PickupLocation } from "@/components/pickup-details";
+import { getOrderById, getPickupDetails } from "@/lib/queries";
 import type { OrderStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,10 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
   const order = await getOrderById(id);
 
   if (!order) notFound();
+
+  // Self-pickup customers need to know where to collect from.
+  const pickup =
+    order.orderType === "SELF_PICKUP" ? await getPickupDetails() : null;
 
   const track = order.orderType === "DELIVERY" ? DELIVERY_TRACK : PICKUP_TRACK;
   const currentIndex = track.indexOf(order.status);
@@ -175,9 +180,16 @@ export default async function OrderPage(props: PageProps<"/orders/[id]">) {
           </dl>
         </Card>
 
+        {pickup ? (
+          <div className="mt-6">
+            <h2 className="mb-3 text-sm font-semibold">Where to collect</h2>
+            <PickupLocation pickup={pickup} />
+          </div>
+        ) : null}
+
         <Card className="mt-6 p-6">
           <h2 className="text-sm font-semibold">
-            {order.orderType === "DELIVERY" ? "Delivering to" : "Contact"}
+            {order.orderType === "DELIVERY" ? "Delivering to" : "Your details"}
           </h2>
           <ul className="mt-4 space-y-2.5 text-sm">
             <li className="flex items-center gap-2.5">

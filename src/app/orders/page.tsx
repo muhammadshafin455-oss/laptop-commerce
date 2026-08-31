@@ -11,7 +11,12 @@ import {
   inputClass,
 } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
-import { findOrders, getOrdersForUser } from "@/lib/queries";
+import {
+  findOrders,
+  getOrdersByIds,
+  getOrdersForUser,
+} from "@/lib/queries";
+import { getRememberedOrderIds } from "@/lib/recent-orders";
 import type { OrderView } from "@/lib/types";
 import { getCurrentUser } from "@/lib/user-auth";
 
@@ -91,13 +96,26 @@ export default async function OrdersPage(props: PageProps<"/orders">) {
 
   // A signed-in customer sees their own history; the lookup form stays
   // available for orders placed as a guest.
-  const results = query
-    ? await findOrders(query)
-    : user
-      ? await getOrdersForUser(user.id, user.phone)
-      : [];
+  // Without a search, show everything this visitor can claim: their account's
+  // orders plus anything placed on this device as a guest.
+  let results: OrderView[];
+  if (query) {
+    results = await findOrders(query);
+  } else {
+    const [accountOrders, deviceOrders] = await Promise.all([
+      user ? getOrdersForUser(user.id, user.phone) : Promise.resolve([]),
+      getRememberedOrderIds().then(getOrdersByIds),
+    ]);
+    const byId = new Map<string, OrderView>();
+    for (const order of [...accountOrders, ...deviceOrders]) {
+      byId.set(order.id, order);
+    }
+    results = [...byId.values()].sort((a, b) =>
+      b.createdAt.localeCompare(a.createdAt),
+    );
+  }
 
-  const showingAccountOrders = !query && !!user;
+  const showingOwnOrders = !query;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -106,11 +124,13 @@ export default async function OrdersPage(props: PageProps<"/orders">) {
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
         <SectionHeading
           eyebrow="Order status"
-          title={showingAccountOrders ? "My orders" : "Track an order"}
+          title={showingOwnOrders ? "My orders" : "Track an order"}
           description={
-            showingAccountOrders
-              ? `Orders on this account, and any placed as a guest with ${user.phone}.`
-              : "Search by your name, phone number, email, or order ID."
+            !showingOwnOrders
+              ? "Search by your name, phone number, email, or order ID."
+              : user
+                ? `Orders on this account, and any placed with ${user.phone} or from this device.`
+                : "Orders placed from this device. Sign in to keep them across devices."
           }
         />
 
